@@ -1,35 +1,50 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
-	socketio "github.com/googollee/go-socket.io"
+	"github.com/gorilla/websocket"
 )
 
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
+func reader(conn *websocket.Conn) {
+	for {
+		messageType, p, err := conn.ReadMessage()
+		if err != nil {
+			log.Println(err)
+		}
+
+		log.Println(string(p))
+
+		if err := conn.WriteMessage(messageType, p); err != nil {
+			log.Println(err)
+		}
+	}
+}
+
+func ws(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(r *http.Request) bool {
+		return true
+	}
+
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Println("Client connected...")
+
+	reader(ws)
+}
+
 func main() {
-	server := socketio.NewServer(nil)
-
-	server.OnConnect("/", func(s socketio.Conn) error {
-		s.SetContext("")
-		fmt.Println("connected:", s.ID())
-		return nil
-	})
-
-	server.OnError("/", func(s socketio.Conn, e error) {
-		fmt.Println("meet error:", e)
-	})
-
-	server.OnDisconnect("/", func(s socketio.Conn, reason string) {
-		fmt.Println("closed", reason)
-	})
-
-	go server.Serve()
-	defer server.Close()
-
-	http.Handle("/socket.io/", server)
 	http.Handle("/", http.FileServer(http.Dir("./static")))
-	log.Println("Serving at localhost:8000...")
+	http.HandleFunc("/ws", ws)
+
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }

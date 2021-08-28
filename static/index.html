@@ -7,13 +7,23 @@
         <main>
             <h1 id="title">Use your card to login to the dashboard</h1>
         </main>
-        <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
         <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
         <script>
-        var socket = io();
-        
+            let socket = new WebSocket("ws://localhost:8000/ws");
+
+            socket.onopen = () => {
+                console.log("connected!")
+            }
+
+            socket.onclose = (event) => {
+                console.log("websokcet connection closed!", event)
+            }
+
+            socket.onerror = (err) => {
+                console.log("connection error!", err)
+            }
         // if login succeed
-        $('#title').text('Welcome, Boss!');
+        // $('#title').text('Welcome, Boss!');
         </script>
     </body>
 </html>
