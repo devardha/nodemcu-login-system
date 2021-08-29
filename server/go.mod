@@ -1,4 +1,4 @@
-module github.com/devardha/arduino-attendance-system
+module github.com/devardha/nodemcu-login-system
 
 go 1.16
 
