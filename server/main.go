@@ -19,7 +19,14 @@ func reader(conn *websocket.Conn) {
 			log.Println(err)
 		}
 
-		log.Println(string(p))
+		// log.Println(string(p))
+		if string(p) == "RFID_SUCCESS" {
+			log.Println(":)")
+		}
+
+		if string(p) == "RFID_FAILED" {
+			log.Println(":(")
+		}
 
 		if err := conn.WriteMessage(messageType, p); err != nil {
 			log.Println(err)
